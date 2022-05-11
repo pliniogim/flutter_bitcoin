@@ -13,7 +13,9 @@ class PriceScreen extends StatefulWidget {
 
 class _PriceScreenState extends State<PriceScreen> {
   String selectedCurrency = 'BRL';
-
+  String bitcoin = '?';
+  String ethereum = '?';
+  String lightBitcoin = '?';
   CoinData coinData = CoinData();
 
   Widget getPicker() {
@@ -68,10 +70,26 @@ class _PriceScreenState extends State<PriceScreen> {
       backgroundColor: Colors.lightBlue,
       itemExtent: 36.0,
       onSelectedItemChanged: (selectIndex) {
-        //print(selectIndex);
+        setState(() {
+          selectedCurrency = moedas[selectIndex];
+          getUrl();
+        });
       },
       children: listadeMoedas,
     );
+  }
+
+  Future getUrl() async {
+    try {
+      List<double> bitcoinR = await coinData.onlineRequest(selectedCurrency);
+      setState(() {
+        bitcoin = bitcoinR[0].toStringAsFixed(0);
+        ethereum = bitcoinR[1].toStringAsFixed(0);
+        lightBitcoin = bitcoinR[2].toStringAsFixed(0);
+      });
+    } catch(e) {
+      throw 'Não foi possível acesso à rede: $e';
+    }
   }
 
   // List<DropdownMenuItem<String>> retornaItemsDropDown() {
@@ -95,6 +113,11 @@ class _PriceScreenState extends State<PriceScreen> {
   //   }
   //   return listadeMoedas;
   // }
+  @override
+  void initState() {
+    super.initState();
+    getUrl();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,12 +137,57 @@ class _PriceScreenState extends State<PriceScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0),
               ),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 15.0, horizontal: 28.0),
                 child: Text(
-                  '1 BTC = ? USD',
+                  '1 BTC = $bitcoin $selectedCurrency',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
+                    fontSize: 20.0,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18.0, 0, 18.0, 0),
+            child: Card(
+              color: Colors.purpleAccent,
+              elevation: 5.0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 15.0, horizontal: 28.0),
+                child: Text(
+                  '1 ETH = $ethereum $selectedCurrency',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 20.0,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18.0, 0, 18.0, 0),
+            child: Card(
+              color: Colors.redAccent,
+              elevation: 5.0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 15.0, horizontal: 28.0),
+                child: Text(
+                  '1 LTC = $lightBitcoin $selectedCurrency',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
                     fontSize: 20.0,
                     color: Colors.white,
                   ),
@@ -134,7 +202,9 @@ class _PriceScreenState extends State<PriceScreen> {
             color: Colors.lightBlue,
             //
             //ternary mode
-            child: Platform.isIOS ? iosPicker(): iosPicker(), //androidDropDownButton()
+            child: Platform.isIOS
+                ? iosPicker()
+                : iosPicker(), //androidDropDownButton()
             //
             //one way
             //child: getPicker(),
